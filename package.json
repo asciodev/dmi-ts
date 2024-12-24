@@ -1,0 +1,41 @@
+{
+  "name": "dmi-ts",
+  "version": "0.1.0",
+  "description": "A tool for reading and manipulating BYOND DMI files.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "dmi",
+    "byond"
+  ],
+  "author": "asciodev",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asciodev/dmi-ts"
+  },
+  "bugs": {
+    "url": "https://github.com/asciodev/dmi-ts/issues"
+  },
+  "homepage": "https://github.com/asciodev/dmi-ts#readme",
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pako": "^2.0.3",
+    "pako": "^2.1.0"
+  }
+}
