@@ -12,8 +12,8 @@ Print the names of every state in `foo.dmi`:
 
 ~~~~typescript
 const sheet: DmiSheet = DmiSheet.fromBytes(await readFile('foo.dmi'));
-sheet.states.forEach((state) {
-  print(state.name);
+sheet.states.forEach((state) => {
+  console.log(state.name);
 });
 ~~~~
 
