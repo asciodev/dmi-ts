@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, onTestFailed, test } from "vitest";
-import { DmiIcon, DmiSheet, DmiState, DmiStateType, IconDirection, MovieState, PixmapState, Point } from "../src/dmi_sheet"
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { DmiIcon, DmiSheet, DmiState, IconDirection, MovieState, PixmapState, Point } from "../src/dmi_sheet"
 import { readFile } from "node:fs/promises";
 import { Some } from "../src/maybe";
 import Image from "image-js";
@@ -10,7 +10,7 @@ const _twoStaticFile = 'test/samples/two-static.dmi';
 const _leftPngFile = 'test/samples/left.png';
 const animBytes = await readFile(_animFile);
 const twoStaticBytes = await readFile(_twoStaticFile);
-const _leftPngBytes = await readFile(_leftPngFile);
+const leftPngBytes = await readFile(_leftPngFile);
 
 test('Point equality checking works', () => {
   expect((new Point(1, 1)).equals(new Point(1, 1))).toBeTruthy();
@@ -111,7 +111,7 @@ describe('Image processing', () => {
   let sheet: DmiSheet;
 
   beforeEach(async () => {
-    leftPng = await Image.load(_leftPngBytes);
+    leftPng = await Image.load(leftPngBytes);
     sheet = await DmiSheet.fromBytes(twoStaticBytes);
   });
 
