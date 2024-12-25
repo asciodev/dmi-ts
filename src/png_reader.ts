@@ -12,9 +12,8 @@ const _pngMagicNumbers = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 ///
 /// It will throw [DmiParseError] if either it encouters a problem going through
 /// the chunks or fails to find a zTXt chunk.
-const getZtxt: (png: ArrayBuffer, targetKeyword?: string) => string | undefined = (png, targetKeyword = "Description") => {
+const getZtxt: (bytes: Uint8Array, targetKeyword?: string) => string | undefined = (bytes, targetKeyword = "Description") => {
   let bytePos = 0;
-  const bytes = new Uint8Array(png);
   const bytesData = new DataView(bytes.buffer);
 
   // dmis are valid PNGs, so we check for a valid PNG header first

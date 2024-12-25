@@ -4,7 +4,6 @@ import getZtxt from "../src/png_reader";
 
 
 test("PngReader extracts and decompresses zTXt chunk", async () => {
-  const png = readFile("test/samples/hello-world.png");
-  const bytes = (await png).buffer;
+  const bytes = await readFile("test/samples/hello-world.png");
   expect(getZtxt(bytes)).toBe("Hello, world!");
 });

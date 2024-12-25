@@ -2,14 +2,14 @@ import {DescriptionParseError} from './errors';
 
 /// A single key-value pair in a dmi description. Both key and value are always
 /// strings
-class Statement {
+export class Statement {
   constructor(public key: string, public value: string) {}
 
   toString = () => '$key = $value';
 }
 
 /// A single block in a dmi description, along with the header
-class Block {
+export class Block {
   constructor(public header: Statement) {}
   children: Statement[] = [];
   toString = () => this.header.toString() + this.children.map((i) => `\t${i.toString()}\n`).join('');
