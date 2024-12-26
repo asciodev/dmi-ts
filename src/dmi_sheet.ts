@@ -247,7 +247,7 @@ export abstract class DmiState {
       return new MovieState(
         name,
         icons,
-        Some(delays),
+        delays,
         frameCount,
         dirCount,
         movement,
@@ -283,7 +283,7 @@ export class MovieState extends DmiState {
   /// These delays are the same for every direction. The list will always have
   /// as many items as [framesCount], even if the delays list defined in the dmi
   /// itself is longer.
-  constructor(name: string, public icons: Map<IconDirection, DmiIcon[]>, public delays: number[],
+  constructor(name: string, public icons: Map<IconDirection, DmiIcon[]>, public delays?: number[],
     public framesCount = 1, public directionsCount = 1, movement = false) { super(name, movement, DmiStateType.Movie) }
 
   static async getIconCount(state: MovieState): Promise<number> {
