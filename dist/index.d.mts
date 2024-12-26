@@ -63,10 +63,10 @@ declare class PixmapState extends DmiState {
 }
 declare class MovieState extends DmiState {
     icons: Map<IconDirection, DmiIcon[]>;
-    delays: number[];
+    delays?: number[] | undefined;
     framesCount: number;
     directionsCount: number;
-    constructor(name: string, icons: Map<IconDirection, DmiIcon[]>, delays: number[], framesCount?: number, directionsCount?: number, movement?: boolean);
+    constructor(name: string, icons: Map<IconDirection, DmiIcon[]>, delays?: number[] | undefined, framesCount?: number, directionsCount?: number, movement?: boolean);
     static getIconCount(state: MovieState): Promise<number>;
     static getThumbnail(state: MovieState): Promise<Image>;
 }

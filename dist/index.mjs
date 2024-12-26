@@ -331,7 +331,7 @@ var DmiState = class {
       return new MovieState(
         name,
         icons,
-        Some(delays),
+        delays,
         frameCount,
         dirCount,
         movement
