@@ -9,47 +9,43 @@ export class DmiSheet {
   _bytes: Maybe<Uint8Array>;
 
   /// Width of each icon in the sheet
-  iconWidth: Maybe<number>;
+  iconWidth: number = 0;
 
   /// Height of each icon in the sheet
-  iconHeight: Maybe<number>;
-
-  _imageHeight: Maybe<number>;
-  _imageWidth: Maybe<number>;
+  iconHeight: number = 0;
 
   /// Height of the whole sprite sheet
-  static async getImageHeight(sheet: DmiSheet) { return sheet._imageHeight ?? (sheet._imageHeight = (await DmiSheet.loadImage(sheet)).height); }
+  _imageHeight: number = 0;
 
   /// Width of the whole sprite sheet
-  static async getImageWidth(sheet: DmiSheet) { return sheet._imageWidth ?? (sheet._imageWidth = (await DmiSheet.loadImage(sheet)).width); }
+  _imageWidth: number = 0;
 
-  _image: Maybe<Image>;
+  /// The spritesheet
+  _image?: Image = new Image();
+
+  get image() {
+    return Some(this._image);
+  }
 
   /// Whole sprite sheet as image
-  ///
-  /// Images are lazily evaluated. Although the sheet object expects the whole
-  /// image to be loaded into memory, it does not actually process the image
-  /// as a PNG until it is necessary to do so
   static async loadImage(sheet: DmiSheet) {
     if (sheet._image == null) {
       sheet._image = await Image.load(Some(sheet._bytes))
       sheet._bytes = undefined;
     }
 
-    return Some(sheet._image);
+    return sheet._image;
   }
 
   /// Number of icons horizontally in one row of the sprite sheet
-  static async getColumnCount(sheet: DmiSheet) { return Math.floor((await DmiSheet.getImageWidth(sheet)) / Some(sheet.iconWidth)); }
+  getColumnCount() { return Math.floor(this.image.width / this.iconWidth); }
 
   /// Number of icons vertically in one column of the sprite sheet
-  static async getRowCount(sheet: DmiSheet) { return Math.floor((await DmiSheet.getImageHeight(sheet)) / Some(sheet.iconHeight)); }
+  getRowCount() { return Math.floor(this.image.height / this.iconHeight); }
 
   /// Icon states defined for this dmi sheet
   get states(): DmiState[] {
-      const _frozenStates = structuredClone(this._states);
-      Object.freeze(_frozenStates);
-      return _frozenStates;
+    return this._states;
   }
 
   _states: DmiState[] = [];
@@ -65,19 +61,19 @@ export class DmiSheet {
   /// coordinates for an icon that would have been there, had the row been full.
   /// It will throw a [RangeError] for indices that couldn't possibly be on the
   /// sheet.
-  static async getIconCoords(sheet: DmiSheet, index: number) {
+  getIconCoords(index: number) {
     if (index < 0) {
       throw new RangeError('Icon index cannot be less than 0');
     }
 
-    var row = Math.floor(index / (await DmiSheet.getColumnCount(sheet)));
+    var row = Math.floor(index / (this.getColumnCount()));
 
-    if (row > (await DmiSheet.getRowCount(sheet))) {
+    if (row > (this.getRowCount())) {
       throw new RangeError('Index $index is outside of sheet');
     }
-    let col = index % (await DmiSheet.getColumnCount(sheet));
+    let col = index % (this.getColumnCount());
 
-    return new Point((col * Some(sheet.iconWidth)), (row * Some(sheet.iconHeight)));
+    return new Point((col * this.iconWidth), (row * this.iconHeight));
   }
 
   /// Load from a dmi file loaded into a list of bytes
@@ -125,14 +121,13 @@ export class DmiSheet {
 
     for (var block of blocks) {
       var state = DmiState._fromBlock(block, sheet, iconCount);
-      let count;
-      if(state.name === "anim") count = await MovieState.getIconCount(state as MovieState);
-      else count = await PixmapState.getIconCount(state as PixmapState);
-      iconCount += await count;
+      iconCount += state.getIconCount();
       sheet._states.push(state);
       sheet._statesByName[state.name] = state;
     }
-    
+    Object.freeze(sheet._states);
+    sheet._image = undefined;
+    sheet._image = await this.loadImage(sheet);
     return sheet;
   }
 }
@@ -152,12 +147,12 @@ export abstract class DmiState {
   constructor(public name: string, public movement: boolean, public dmiStateType: DmiStateType) {}
 
   /// Total number of icons in the state
-  static async getIconCount(_: DmiState): Promise<number> { 
+  public getIconCount(): number { 
     throw new ArgumentError("getIconCount called on abstract DmiState")
   };
 
   /// Convenience function for getting a representative icon for this state
-  static async getThumbnail(_: DmiState): Promise<Image> {
+  public getThumbnail(): Image {
     throw new ArgumentError("getThumbnail called on abstract DmiState")
   };
 
@@ -165,10 +160,10 @@ export abstract class DmiState {
   ///
   /// [iconCount] is used to determine the index offset for the new icons
   static _fromBlock = (block: Block, sheet: DmiSheet, iconCount: number) => {
-    let dirCount: Maybe<number>;
-    let frameCount: Maybe<number>;
+    let dirCount = -1;
+    let frameCount = -1;
     let name: string;
-    let delays: Maybe<number[]>;
+    let delays: number[] = [];
     let movement = false;
     const hotspots: NumericDictionary<Point> = {}; // frame number to x,y
 
@@ -195,7 +190,7 @@ export abstract class DmiState {
       // We silently ignore entries we don't recognize
     }
 
-    if (dirCount == null || frameCount == null || name == null) {
+    if (!dirCount || !frameCount || !name || !name.length ) {
       throw new DmiParseError('Incomplete specification for $block.header');
     }
 
@@ -240,7 +235,7 @@ export abstract class DmiState {
       // dmi files will happily include any number of items in the delays list,
       // but the meaningful values are only the 0 to frameCount-1, so for the sake
       // of sanity we discard the extra information
-      if(delays != null) {
+      if(!!delays.length) {
         delays = delays.slice(0, frameCount);
       }
 
@@ -262,9 +257,9 @@ export abstract class DmiState {
 export class PixmapState extends DmiState {
   constructor(name: string, public icon: DmiIcon, movement: boolean = false) { super(name, movement, DmiStateType.Pixmap)}
 
-  static async getIconCount(_: PixmapState) { return 1; }; // Pixmap is always one icon
+  public getIconCount() { return 1; }; // Pixmap is always one icon
 
-  static async getThumbnail(state: PixmapState) { return await DmiIcon.loadImage(state.icon) };
+  public getThumbnail() { return this.icon.loadImage() };
 }
 
 /// A movie Dmi state
@@ -286,13 +281,13 @@ export class MovieState extends DmiState {
   constructor(name: string, public icons: Map<IconDirection, DmiIcon[]>, public delays?: number[],
     public framesCount = 1, public directionsCount = 1, movement = false) { super(name, movement, DmiStateType.Movie) }
 
-  static async getIconCount(state: MovieState): Promise<number> {
-    return state.framesCount * state.directionsCount;
+  public getIconCount() {
+    return this.framesCount * this.directionsCount;
   }
 
   /// Get first icon in first direction, for use as thumbnail
-  static async getThumbnail(state: MovieState): Promise<Image> { 
-    return await DmiIcon.loadImage(Some(Some(state.icons.entries().next().value)[1])[0]);
+  public getThumbnail(): Image { 
+    return Some(Some(this.icons.entries().next().value)[1])[0].loadImage();
   }
 }
 
@@ -334,16 +329,16 @@ export class DmiIcon {
   ///
   /// Coordinates are the upper left corner pixel of the icon, 0-indexed, with
   /// the origin in the upper left of the sheet and all numbers positve.
-  static async getSheetPosition(icon: DmiIcon) { return await DmiSheet.getIconCoords(icon._sheet, icon._index); }
+  getSheetPosition() { return this._sheet.getIconCoords(this._index); }
 
-  static async loadImage(icon: DmiIcon): Promise<Image> {
-    if (icon._image == null) {
-      const pos = await DmiIcon.getSheetPosition(icon);
-      icon._image = Some(icon._sheet._image).crop({x: pos.x, y: pos.y,
-          width: icon._sheet.iconWidth, height: icon._sheet.iconHeight});
+  loadImage(): Image {
+    if (this._image == null) {
+      const pos = this.getSheetPosition();
+      this._image = Some(this._sheet._image).crop({x: pos.x, y: pos.y,
+          width: this._sheet.iconWidth, height: this._sheet.iconHeight});
     }
 
-    return icon._image;
+    return this._image;
   }
 
 }

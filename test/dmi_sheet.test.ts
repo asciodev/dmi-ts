@@ -21,11 +21,11 @@ test('Point equality checking works', () => {
 
 describe('Animation states', () => {
   let sheet: DmiSheet;
-  let anim: MovieState;
+  let movie: DmiState;
 
   beforeEach(async () => {
     sheet = await DmiSheet.fromBytes(animBytes);
-    anim = sheet.states[0] as MovieState;
+    movie = sheet.states[0];
   });
 
   test('are properly instantiated as MovieState', () => {
@@ -38,29 +38,29 @@ describe('Animation states', () => {
   });
 
   test('have correct number of frames', () => {
-    expect(anim.framesCount).toEqual(2);
-    anim.icons.forEach((frames, _) => {
+    expect((movie as MovieState).framesCount).toEqual(2);
+    (movie as MovieState).icons.forEach((frames, _) => {
       expect(frames.length).toEqual(2);
     });
   });
 
   test('have the correct number of directions', () => {
-    expect(anim.directionsCount).toEqual(4);
-    expect(anim.icons.size).toEqual(4);
+    expect((movie as MovieState).directionsCount).toEqual(4);
+    expect((movie as MovieState).icons.size).toEqual(4);
   });
 
   test('Hotspots are parsed correctly', () => {
-    expect(Some(anim.icons.get(IconDirection.south))[0].hotspot).toEqual(new Point(0, 0));
-    expect(Some(anim.icons.get(IconDirection.north))[0].hotspot).toEqual(new Point(31, 31));
+    expect(Some((movie as MovieState).icons.get(IconDirection.south))[0].hotspot).toEqual(new Point(0, 0));
+    expect(Some((movie as MovieState).icons.get(IconDirection.north))[0].hotspot).toEqual(new Point(31, 31));
   });
 
-  test('report correct number of icons', async () => {
-    expect(await MovieState.getIconCount(anim)).toEqual(8);
+  test('report correct number of icons', () => {
+    expect((movie as MovieState).getIconCount()).toEqual(8);
   });
 
-  test('return correct thumbnail', async () => {
-    const expectedImage = await DmiIcon.loadImage(Some(anim.icons.get(IconDirection.south))[0]);
-    expect((await MovieState.getThumbnail(anim)).toBuffer()).toEqual(expectedImage.toBuffer());
+  test('return correct thumbnail', () => {
+    const expectedImage = Some((movie as MovieState).icons.get(IconDirection.south))[0].loadImage();
+    expect(movie.getThumbnail().toBuffer()).toEqual(expectedImage.toBuffer());
   });
 });
 
@@ -71,38 +71,36 @@ describe('Static icons', () => {
     sheet = await DmiSheet.fromBytes(twoStaticBytes);
   });
 
-  test('Image width is correct', async () => {
-    expect(await DmiSheet.getImageWidth(sheet)).toEqual(64);
+  test('Image width is correct', () => {
+    expect(sheet.image.width).toEqual(64);
 
     // Again, to fetch cached
-    expect(await DmiSheet.getImageWidth(sheet)).toEqual(64);
+    expect(sheet.image.width).toEqual(64);
   });
 
-  test('Image height is correct', async () => {
-    expect(await DmiSheet.getImageHeight(sheet)).toEqual(32);
-    expect(await DmiSheet.getImageHeight(sheet)).toEqual(32);
+  test('Image height is correct', () => {
+    expect(sheet.image.height).toEqual(32);
+    expect(sheet.image.height).toEqual(32);
   });
 
-  test('Number of rows is reported correctly', async () => {
-    expect(await DmiSheet.getRowCount(sheet)).toEqual(1);
+  test('Number of rows is reported correctly', () => {
+    expect(sheet.getRowCount()).toEqual(1);
   });
 
-  test('Number of columns is reported correctly', async () => {
-    expect(await DmiSheet.getColumnCount(sheet)).toEqual(2);
+  test('Number of columns is reported correctly', () => {
+    expect(sheet.getColumnCount()).toEqual(2);
   });
 
-  test('Coordinates of icons are calculated correctly', async () => {
-    expect(await DmiSheet.getIconCoords(sheet, 0)).toEqual(new Point(0, 0));
-    expect(await DmiSheet.getIconCoords(sheet, 1)).toEqual(new Point(32, 0));
+  test('Coordinates of icons are calculated correctly', () => {
+    expect(sheet.getIconCoords(0)).toEqual(new Point(0, 0));
+    expect(sheet.getIconCoords(1)).toEqual(new Point(32, 0));
   });
 
   test('Bad indices in getIconCoords() are caught', () => {
-    expect(
-      DmiSheet.getIconCoords(sheet, -1)
-    )
-    .rejects
+    expect(() => sheet.getIconCoords(-1))
     .toThrowError();
-    expect(DmiSheet.getIconCoords(sheet, 10)).rejects.toThrowError();
+    expect(() => sheet.getIconCoords(10))
+    .toThrowError();
   });
 });
 
@@ -115,7 +113,7 @@ describe('Image processing', () => {
     sheet = await DmiSheet.fromBytes(twoStaticBytes);
   });
 
-  test('Icon is properly extracted to separate image', async () => {
+  test('Icon is properly extracted to separate image', () => {
     const state: DmiState = sheet.getStateNamed('left');
     let icon: DmiIcon;
 
@@ -125,6 +123,6 @@ describe('Image processing', () => {
       throw new DmiParseError('Problem fetching state, cannot extract icon');
     }
 
-    expect((await DmiIcon.loadImage(icon)).toBase64()).toEqual(leftPng.toBase64());
+    expect((icon.loadImage()).toBase64()).toEqual(leftPng.toBase64());
   });
 });

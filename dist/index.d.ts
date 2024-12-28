@@ -25,21 +25,20 @@ declare function Some<T>(maybe: Maybe<T>): T;
 
 declare class DmiSheet {
     _bytes: Maybe<Uint8Array>;
-    iconWidth: Maybe<number>;
-    iconHeight: Maybe<number>;
-    _imageHeight: Maybe<number>;
-    _imageWidth: Maybe<number>;
-    static getImageHeight(sheet: DmiSheet): Promise<number>;
-    static getImageWidth(sheet: DmiSheet): Promise<number>;
-    _image: Maybe<Image>;
+    iconWidth: number;
+    iconHeight: number;
+    _imageHeight: number;
+    _imageWidth: number;
+    _image?: Image;
+    get image(): Image;
     static loadImage(sheet: DmiSheet): Promise<Image>;
-    static getColumnCount(sheet: DmiSheet): Promise<number>;
-    static getRowCount(sheet: DmiSheet): Promise<number>;
+    getColumnCount(): number;
+    getRowCount(): number;
     get states(): DmiState[];
     _states: DmiState[];
     _statesByName: Dictionary<DmiState>;
     getStateNamed(name: string): DmiState;
-    static getIconCoords(sheet: DmiSheet, index: number): Promise<Point>;
+    getIconCoords(index: number): Point;
     static fromBytes(bytes: Uint8Array): Promise<DmiSheet>;
 }
 declare enum DmiStateType {
@@ -51,15 +50,15 @@ declare abstract class DmiState {
     movement: boolean;
     dmiStateType: DmiStateType;
     constructor(name: string, movement: boolean, dmiStateType: DmiStateType);
-    static getIconCount(_: DmiState): Promise<number>;
-    static getThumbnail(_: DmiState): Promise<Image>;
+    getIconCount(): number;
+    getThumbnail(): Image;
     static _fromBlock: (block: Block, sheet: DmiSheet, iconCount: number) => PixmapState | MovieState;
 }
 declare class PixmapState extends DmiState {
     icon: DmiIcon;
     constructor(name: string, icon: DmiIcon, movement?: boolean);
-    static getIconCount(_: PixmapState): Promise<number>;
-    static getThumbnail(state: PixmapState): Promise<Image>;
+    getIconCount(): number;
+    getThumbnail(): Image;
 }
 declare class MovieState extends DmiState {
     icons: Map<IconDirection, DmiIcon[]>;
@@ -67,8 +66,8 @@ declare class MovieState extends DmiState {
     framesCount: number;
     directionsCount: number;
     constructor(name: string, icons: Map<IconDirection, DmiIcon[]>, delays?: number[] | undefined, framesCount?: number, directionsCount?: number, movement?: boolean);
-    static getIconCount(state: MovieState): Promise<number>;
-    static getThumbnail(state: MovieState): Promise<Image>;
+    getIconCount(): number;
+    getThumbnail(): Image;
 }
 declare enum IconDirection {
     none = "none",
@@ -87,8 +86,8 @@ declare class DmiIcon {
     hotspot: Maybe<Point>;
     constructor(_sheet: DmiSheet, _index: number, hotspot?: Maybe<Point>);
     _image: Maybe<Image>;
-    static getSheetPosition(icon: DmiIcon): Promise<Point>;
-    static loadImage(icon: DmiIcon): Promise<Image>;
+    getSheetPosition(): Point;
+    loadImage(): Image;
 }
 declare class Point {
     x: number;
