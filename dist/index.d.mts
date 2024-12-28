@@ -1,5 +1,18 @@
 import { Image } from 'image-js';
 
+declare class Statement {
+    key: string;
+    value: string;
+    constructor(key: string, value: string);
+    toString: () => string;
+}
+declare class Block {
+    header: Statement;
+    constructor(header: Statement);
+    children: Statement[];
+    toString: () => string;
+}
+
 type Maybe<T> = NonNullable<T> | undefined;
 declare function Some<T>(maybe: Maybe<T>): T;
 
@@ -15,6 +28,7 @@ interface DmiSheet {
     getIconCoords: (idx: number) => Point;
     getStateNamed: (name: string) => DmiState;
 }
+declare function createDmiSheet(bytes: Uint8Array): Promise<DmiSheet>;
 declare enum DmiStateType {
     Pixmap = 0,
     Movie = 1
@@ -31,6 +45,7 @@ interface DmiState {
     iconCount: number;
     type: DmiStateType;
 }
+declare function createDmiState(block: Block, sheet: DmiSheet, iconCount: number): DmiState;
 declare enum IconDirection {
     none = "none",
     south = "south",
@@ -49,6 +64,7 @@ interface DmiIcon {
     sheetPosition: Point;
     image: Image;
 }
+declare function createDmiIcon(sheet: DmiSheet, index: number, hotspot?: Maybe<Point>): DmiIcon;
 interface Point {
     x: number;
     y: number;
@@ -56,6 +72,7 @@ interface Point {
     toString: () => string;
     equals: (point: Point) => boolean;
 }
+declare function createPoint(x: number, y: number): Point;
 
 declare class DmiParseError extends Error {
     constructor(message: string);
@@ -77,4 +94,4 @@ interface NumericDictionary<T> {
     [Key: number]: T;
 }
 
-export { ArgumentError, DescriptionParseError, type Dictionary, type DmiIcon, DmiParseError, type DmiSheet, type DmiState, type Maybe, type NumericDictionary, PngParseError, Some };
+export { ArgumentError, DescriptionParseError, type Dictionary, type DmiIcon, DmiParseError, type DmiSheet, type DmiState, DmiStateType, IconDirection, type Maybe, type NumericDictionary, PngParseError, Some, createDmiIcon, createDmiSheet, createDmiState, createPoint };
