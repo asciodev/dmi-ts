@@ -1,6 +1,6 @@
 {
   "name": "dmi-ts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A tool for reading and manipulating BYOND DMI files.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
