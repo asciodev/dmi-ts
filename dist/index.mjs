@@ -250,7 +250,7 @@ function createDmiState(block, sheet, iconCount) {
       hotspots[hotspot[2]] = createPoint(hotspot[0], hotspot[1]);
     }
   }
-  if (!dirCount || !frameCount || !name || !name.length) {
+  if (!dirCount || !frameCount || !name) {
     throw new DmiParseError("Incomplete specification for $block.header");
   }
   if (dirCount * frameCount == 1) {

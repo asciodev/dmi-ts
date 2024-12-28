@@ -184,7 +184,7 @@ export function createDmiState(block: Block, sheet: DmiSheet, iconCount: number)
     // We silently ignore entries we don't recognize
   }
 
-  if (!dirCount || !frameCount || !name || !name.length ) {
+  if (!dirCount || !frameCount || !name ) {
     throw new DmiParseError('Incomplete specification for $block.header');
   }
 
